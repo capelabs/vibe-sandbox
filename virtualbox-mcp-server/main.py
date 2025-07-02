@@ -55,7 +55,7 @@ async def get_vm_info(vm_id: str):
     :param vm_id: VM ID
     :return: VM information
     """
-    command = f"showvminfo {vm_id} --machinereadable"
+    command = f"showvminfo '{vm_id}' --machinereadable"
     output = run_vboxmanage_command(command)
     
     if "error" in output:
@@ -77,7 +77,7 @@ async def start_vm(vm_id: str):
     :param vm_id: VM ID
     :return: Start result message
     """
-    command = f"startvm {vm_id} --type headless"
+    command = f"startvm '{vm_id}' --type headless"
     output = run_vboxmanage_command(command)
     
     if "error" in output:
@@ -93,7 +93,7 @@ async def stop_vm(vm_id: str):
     :param vm_id: VM ID
     :return: Stop result message
     """
-    command = f"controlvm {vm_id} poweroff"
+    command = f"controlvm '{vm_id}' poweroff"
     output = run_vboxmanage_command(command)
     
     if "error" in output:
@@ -126,7 +126,7 @@ async def extract_memory_dump_from_vm(vm_id: str, dump_path: str):
     :param dump_path: Path to save the dump file
     :return: Extraction result message
     """
-    command = f"debugvm {vm_id} dumpvmcore --filename={dump_path}"
+    command = f"debugvm '{vm_id}' dumpvmcore --filename={dump_path}"
     output = run_vboxmanage_command(command)
     
     if "error" in output:
@@ -144,7 +144,7 @@ async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str):
     :param vm_path: Destination path in the VM
     :return: Copy result message
     """
-    command = f"guestcontrol {vm_id} copyto {host_path} --target-directory={vm_path}"
+    command = f"guestcontrol '{vm_id}' copyto {host_path} --target-directory={vm_path}"
     output = run_vboxmanage_command(command)
     
     if "error" in output:
@@ -162,7 +162,7 @@ async def execute_command_in_vm(vm_id: str, exe: str, command: str):
     :param command: Command to execute
     :return: Execution result message
     """
-    command = f"guestcontrol {vm_id} run --exe {exe} -- -c '{command}'"
+    command = f"guestcontrol '{vm_id}' run --exe {exe} -- -c '{command}'"
     output = run_vboxmanage_command(command)
     
     if "error" in output:
