@@ -6,16 +6,16 @@ import subprocess
 mcp = FastMCP(name="VirtualBox MCP Server")
 
 
-def run_vboxmanage_command(command: str):
+def run_vboxmanage_command(commands: list[str]):
     """
     Execute VBoxManage command and return the result.
-    :param command: VBoxManage command to execute
+    :param commands: VBoxManage commands to execute
     :return: Command execution result
     """
 
     try:
         result = subprocess.run(
-            ["VBoxManage"] + command.split(),
+            ["VBoxManage"] + commands,
             capture_output=True,
             text=True,
             check=True
@@ -31,8 +31,7 @@ async def get_all_vms():
     Get information about all VirtualBox VMs.
     :return: List of VM information
     """
-    command = "list vms"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["list", "vms"])
     
     if "error" in output:
         return {"error": output}
@@ -55,8 +54,7 @@ async def get_vm_info(vm_id: str):
     :param vm_id: VM ID
     :return: VM information
     """
-    command = f"showvminfo '{vm_id}' --machinereadable"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["showvminfo", vm_id, "--machinereadable"])
     
     if "error" in output:
         return {"error": output}
@@ -77,8 +75,7 @@ async def start_vm(vm_id: str):
     :param vm_id: VM ID
     :return: Start result message
     """
-    command = f"startvm '{vm_id}' --type headless"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["startvm", vm_id, "--type", "headless"])
     
     if "error" in output:
         return {"error": output}
@@ -93,8 +90,7 @@ async def stop_vm(vm_id: str):
     :param vm_id: VM ID
     :return: Stop result message
     """
-    command = f"controlvm '{vm_id}' poweroff"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["controlvm", vm_id, "poweroff"])
     
     if "error" in output:
         return {"error": output}
@@ -109,8 +105,7 @@ async def import_vm_from_ova(ova_path: str):
     :param ova_path: OVA file path
     :return: Import result message
     """
-    command = f"import {ova_path}"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["import", ova_path])
     
     if "error" in output:
         return {"error": output}
@@ -126,8 +121,7 @@ async def extract_memory_dump_from_vm(vm_id: str, dump_path: str):
     :param dump_path: Path to save the dump file
     :return: Extraction result message
     """
-    command = f"debugvm '{vm_id}' dumpvmcore --filename={dump_path}"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["debugvm", vm_id, "dumpvmcore", f"--filename={dump_path}"])
     
     if "error" in output:
         return {"error": output}
@@ -144,8 +138,7 @@ async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str):
     :param vm_path: Destination path in the VM
     :return: Copy result message
     """
-    command = f"guestcontrol '{vm_id}' copyto {host_path} --target-directory={vm_path}"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["guestcontrol", vm_id, "copyto", host_path, f"--target-directory={vm_path}"])
     
     if "error" in output:
         return {"error": output}
@@ -162,8 +155,7 @@ async def execute_command_in_vm(vm_id: str, exe: str, command: str):
     :param command: Command to execute
     :return: Execution result message
     """
-    command = f"guestcontrol '{vm_id}' run --exe {exe} -- -c '{command}'"
-    output = run_vboxmanage_command(command)
+    output = run_vboxmanage_command(["guestcontrol", vm_id, "run", "--exe", exe, "--", "-c", command])
     
     if "error" in output:
         return {"error": output}
