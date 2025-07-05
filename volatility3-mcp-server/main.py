@@ -34,11 +34,12 @@ def run_volatility_plugin(plugin_name, memory_dump, arguments, is_windows=False)
         "volatility",
         "-f", os.path.join(memory_dumps_path, memory_dump),
         "-r", "json",
-        plugin_name,
     ]
 
     if not is_windows:
         command.append(f"--remote-isf-url={remote_isf_url}")
+
+    command.append(plugin_name)
 
     if arguments:
         command.append(arguments)
