@@ -1,4 +1,5 @@
 from fastmcp import FastMCP
+from typing import Optional
 
 import subprocess
 
@@ -6,16 +7,21 @@ import subprocess
 mcp = FastMCP(name="VirtualBox MCP Server")
 
 
-def run_vboxmanage_command(commands: list[str]):
+def run_vboxmanage_command(commands: list[str], auth: Optional[dict] = None):
     """
     Execute VBoxManage command and return the result.
     :param commands: VBoxManage commands to execute
+    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
     :return: Command execution result
     """
 
+    if auth:
+        # If authentication is provided, add it to the command
+        commands = commands + ["--username", auth.get("username", ""), "--password", auth.get("password", "")]
+
     try:
         result = subprocess.run(
-            ["VBoxManage"] + commands,
+            ["VBoxManage", "--nologo"] + commands,
             capture_output=True,
             text=True,
             check=True
@@ -130,15 +136,20 @@ async def extract_memory_dump_from_vm(vm_id: str, dump_path: str):
 
 
 @mcp.tool
-async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str):
+async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str, auth: Optional[dict] = None):
     """
     Copy a file from the host to a VM.
     :param vm_id: VM ID
     :param host_path: Host file path
     :param vm_path: Destination path in the VM
+    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
     :return: Copy result message
     """
-    output = run_vboxmanage_command(["guestcontrol", vm_id, "copyto", host_path, f"--target-directory={vm_path}"])
+    output = run_vboxmanage_command([
+        "guestcontrol", vm_id, "copyto",
+        host_path, f"--target-directory={vm_path}",
+        f"--username={auth.get('username', '')}", f"--password={auth.get('password', '')}"
+    ])
     
     if "error" in output:
         return {"error": output}
@@ -147,20 +158,48 @@ async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str):
 
 
 @mcp.tool
-async def execute_command_in_vm(vm_id: str, exe: str, command: str):
+async def execute_command_in_vm(vm_id: str, exe: str, command: str, auth: Optional[dict] = None):
     """
     Execute a command in a VM.
     :param vm_id: VM ID
     :param exe: Path to executable
     :param command: Command to execute
+    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
     :return: Execution result message
     """
-    output = run_vboxmanage_command(["guestcontrol", vm_id, "run", "--exe", exe, "--", "-c", command])
+    output = run_vboxmanage_command([
+        "guestcontrol", vm_id, "run",
+        f"--username={auth.get("username", "")}", f"--password={auth.get("password", "")}",
+        "--", exe, "-c", command
+    ])
     
     if "error" in output:
         return {"error": output}
     
     return {"message": f"Command executed in VM {vm_id}: {command}", "output": output}
+
+
+@mcp.tool
+async def rename_file_in_vm(vm_id: str, old_name: str, new_name: str, auth: Optional[dict] = None):
+    """
+    Rename a file in a VM.
+    :param vm_id: VM ID
+    :param old_name: Current file name
+    :param new_name: New file name
+    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
+    :return: Rename result message
+    """
+    output = run_vboxmanage_command([
+        "guestcontrol", vm_id, "mv",
+        f"--username={auth.get('username', '')}", f"--password={auth.get('password', '')}",
+        old_name, new_name
+    ])
+    
+    if "error" in output:
+        return {"error": output}
+    
+    return {"message": f"File {old_name} has been renamed to {new_name} in VM {vm_id}."}
+
 
 
 if __name__ == "__main__":
