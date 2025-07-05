@@ -12,15 +12,17 @@ mcp = FastMCP(name="Volatility3 MCP Server")
 
 framework.import_files(volatility3.plugins, True)
 memory_dumps_path = os.getenv("VOLATILITY_MEMORY_DUMPS_PATH", "dumps")
+remote_isf_url = os.getenv("VOLATILITY_REMOTE_ISF_URL", "https://github.com/Abyss-W4tcher/volatility3-symbols/raw/master/banners/banners.json")
 
 
-def run_volatility_plugin(plugin_name, memory_dump, arguments):
+def run_volatility_plugin(plugin_name, memory_dump, arguments, is_windows=False):
     """Run a Volatility plugin on a specified memory dump.
 
     Args:
         plugin_name (str): The name of the Volatility plugin to run.
         memory_dump (str): The name of the memory dump file to analyze.
         arguments (str): Additional arguments for the plugin.
+        is_windows (bool): Whether the memory dump is from a Windows OS system.
 
     Returns:
         dict: The results of the plugin execution.
@@ -34,6 +36,9 @@ def run_volatility_plugin(plugin_name, memory_dump, arguments):
         "-r", "json",
         plugin_name,
     ]
+
+    if not is_windows:
+        command.append(f"--remote-isf-url={remote_isf_url}")
 
     if arguments:
         command.append(arguments)
