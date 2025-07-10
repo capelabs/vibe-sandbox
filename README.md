@@ -1,1 +1,1 @@
-# MCP Servers for Sandbox
+# VIBE Sandbox
