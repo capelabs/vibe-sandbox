@@ -1,0 +1,57 @@
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:9.0.0
+    restart: always
+    container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
+      - MONITORING_ENABLED=false
+    ports:
+      - "5044:5044"
+      - "5045:5045"
+    volumes:
+      - $PWD/configs/logstash/pipeline:/usr/share/logstash/pipeline
+      - $PWD/configs/logstash/config:/usr/share/logstash/config
+    networks:
+      - opensearch_network
+  opensearch:
+    image: ghcr.io/capelabs/opensearch-mcp-server:latest
+    restart: always
+    container_name: opensearch
+    environment:
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+      - $PWD/opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml
+    networks:
+      - opensearch_network
+  opensearch_dashboards:
+    image: opensearchproject/opensearch-dashboards:3.0.0
+    restart: always
+    container_name: opensearch_dashboards
+    environment:
+      - OPENSEARCH_HOSTS=http://opensearch:9200
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    ports:
+      - "5601:5601"
+    depends_on:
+      - opensearch
+    networks:
+      - opensearch_network
+  enable_mcp_server:
+    image: alpine/curl:latest
+    container_name: enable_mcp_server
+    volumes:
+      - $PWD/scripts:/scripts
+    depends_on:
+      - opensearch
+    command: sh -c "chmod +x /scripts/enable-mcp-server.sh && sh /scripts/enable-mcp-server.sh"
+    networks:
+      - opensearch_network
+volumes:
+  opensearch_data:
+    driver: local
+networks:
+  opensearch_network:
+    driver: bridge
