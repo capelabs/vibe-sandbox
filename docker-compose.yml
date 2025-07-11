@@ -1,4 +1,12 @@
 services:
+  volatility3-mcp-server:
+    image: ghcr.io/capelabs/volatility3-mcp-server:latest
+    restart: always
+    container_name: volatility3-mcp-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - $PWD/volatility3-mcp-server/dumps:/app/dumps
   logstash:
     image: docker.elastic.co/logstash/logstash:9.0.0
     restart: always

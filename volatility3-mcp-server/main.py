@@ -11,7 +11,7 @@ import os
 mcp = FastMCP(name="Volatility3 MCP Server")
 
 framework.import_files(volatility3.plugins, True)
-memory_dumps_path = os.getenv("VOLATILITY_MEMORY_DUMPS_PATH", "dumps")
+memory_dumps_path = os.getenv("VOLATILITY_MEMORY_DUMPS_PATH", "/app/dumps")
 remote_isf_url = os.getenv("VOLATILITY_REMOTE_ISF_URL", "https://github.com/Abyss-W4tcher/volatility3-symbols/raw/master/banners/banners.json")
 
 
