@@ -31,9 +31,11 @@ services:
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
     volumes:
       - opensearch_data:/usr/share/opensearch/data
-      - $PWD/opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml
+      - $PWD/configs/opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml
     networks:
       - opensearch_network
+    ports:
+      - "9200:9200"
   opensearch_dashboards:
     image: opensearchproject/opensearch-dashboards:3.0.0
     restart: always

@@ -1,5 +1,4 @@
 from fastmcp import FastMCP
-from typing import Optional
 
 import subprocess
 
@@ -7,11 +6,11 @@ import subprocess
 mcp = FastMCP(name="VirtualBox MCP Server")
 
 
-def run_vboxmanage_command(commands: list[str], auth: Optional[dict] = None):
+def run_vboxmanage_command(commands: list[str], auth: dict = None):
     """
     Execute VBoxManage command and return the result.
     :param commands: VBoxManage commands to execute
-    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
+    :param auth: authentication parameters {"username": "user", "password": "pass"}
     :return: Command execution result
     """
 
@@ -20,13 +19,17 @@ def run_vboxmanage_command(commands: list[str], auth: Optional[dict] = None):
         commands = commands + ["--username", auth.get("username", ""), "--password", auth.get("password", "")]
 
     try:
-        result = subprocess.run(
-            ["VBoxManage", "--nologo"] + commands,
-            capture_output=True,
-            text=True,
-            check=True
+        result = subprocess.Popen(
+            ' '.join(["VBoxManage", "--nologo"] + commands),
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
-        return result.stdout.strip()
+
+        return {
+            "stdout": result.stdout.read().decode('utf-8').strip(),
+            "stderr": result.stderr.read().decode('utf-8').strip()
+        }
     except subprocess.CalledProcessError as e:
         return {"error": str(e)}
 
@@ -40,10 +43,13 @@ async def get_all_vms():
     output = run_vboxmanage_command(["list", "vms"])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
+    
+    if output.get("stderr"):
+        return {"error": output["stderr"]}
     
     vms = []
-    for line in output.splitlines():
+    for line in output["stdout"].splitlines():
         parts = line.split('"')
         if len(parts) >= 3:
             vm_name = parts[1]
@@ -63,10 +69,13 @@ async def get_vm_info(vm_id: str):
     output = run_vboxmanage_command(["showvminfo", vm_id, "--machinereadable"])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
+    
+    if output.get("stderr"):
+        return {"error": output["stderr"]}
     
     vm_info = {}
-    for line in output.splitlines():
+    for line in output["stdout"].splitlines():
         if '=' in line:
             key, value = line.split('=', 1)
             vm_info[key.strip()] = value.strip().strip('"')
@@ -84,9 +93,12 @@ async def start_vm(vm_id: str):
     output = run_vboxmanage_command(["startvm", vm_id, "--type", "headless"])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
     
-    return {"message": f"VM {vm_id} has been started successfully."}
+    if output.get("stderr"):
+        return {"error": output["stderr"], "stdout": output.get("stdout", "")}
+    
+    return {"message": f"VM {vm_id} has been started successfully.", "stdout": output.get("stdout", "")}
 
 
 @mcp.tool
@@ -99,9 +111,12 @@ async def stop_vm(vm_id: str):
     output = run_vboxmanage_command(["controlvm", vm_id, "poweroff"])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
     
-    return {"message": f"VM {vm_id} has been stopped successfully."}
+    if output.get("stderr"):
+        return {"error": output["stderr"], "stdout": output.get("stdout", "")}
+    
+    return {"message": f"VM {vm_id} has been stopped successfully.", "stdout": output.get("stdout", "")}
 
 
 @mcp.tool
@@ -114,9 +129,12 @@ async def import_vm_from_ova(ova_path: str):
     output = run_vboxmanage_command(["import", ova_path])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
     
-    return {"message": f"VM has been imported from {ova_path} successfully."}
+    if output.get("stderr"):
+        return {"error": output["stderr"], "stdout": output.get("stdout", "")}
+    
+    return {"message": f"VM has been imported from {ova_path} successfully.", "stdout": output.get("stdout", "")}
 
 
 @mcp.tool
@@ -130,19 +148,22 @@ async def extract_memory_dump_from_vm(vm_id: str, dump_path: str):
     output = run_vboxmanage_command(["debugvm", vm_id, "dumpvmcore", f"--filename={dump_path}"])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
     
-    return {"message": f"Memory dump for VM {vm_id} has been saved to {dump_path}."}
+    if output.get("stderr"):
+        return {"error": output["stderr"], "stdout": output.get("stdout", "")}
+    
+    return {"message": f"Memory dump for VM {vm_id} has been saved to {dump_path}.", "stdout": output.get("stdout", "")}
 
 
 @mcp.tool
-async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str, auth: Optional[dict] = None):
+async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str, auth: dict = None):
     """
     Copy a file from the host to a VM.
     :param vm_id: VM ID
     :param host_path: Host file path
     :param vm_path: Destination path in the VM
-    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
+    :param auth: authentication parameters {"username": "user", "password": "pass"}
     :return: Copy result message
     """
     output = run_vboxmanage_command([
@@ -152,41 +173,47 @@ async def copy_file_to_vm(vm_id: str, host_path: str, vm_path: str, auth: Option
     ])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
     
-    return {"message": f"File {host_path} has been copied to VM {vm_id} at {vm_path}."}
+    if output.get("stderr"):
+        return {"error": output["stderr"], "stdout": output.get("stdout", "")}
+    
+    return {"message": f"File {host_path} has been copied to VM {vm_id} at {vm_path}.", "stdout": output.get("stdout", "")}
 
 
 @mcp.tool
-async def execute_command_in_vm(vm_id: str, exe: str, command: str, auth: Optional[dict] = None):
+async def execute_command_in_vm(vm_id: str, exe: str, command: str, auth: dict = None):
     """
     Execute a command in a VM.
     :param vm_id: VM ID
     :param exe: Path to executable
     :param command: Command to execute
-    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
+    :param auth: authentication parameters {"username": "user", "password": "pass"}
     :return: Execution result message
     """
     output = run_vboxmanage_command([
         "guestcontrol", vm_id, "run",
         f"--username={auth.get("username", "")}", f"--password={auth.get("password", "")}",
-        "--", exe, "-c", command
+        "--", exe, command
     ])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
+    
+    if output.get("stderr"):
+        return {"error": output["stderr"], "stdout": output.get("stdout", "")}
     
     return {"message": f"Command executed in VM {vm_id}: {command}", "output": output}
 
 
 @mcp.tool
-async def rename_file_in_vm(vm_id: str, old_name: str, new_name: str, auth: Optional[dict] = None):
+async def rename_file_in_vm(vm_id: str, old_name: str, new_name: str, auth: dict = None):
     """
     Rename a file in a VM.
     :param vm_id: VM ID
     :param old_name: Current file name
     :param new_name: New file name
-    :param auth: Optional authentication parameters {"username": "user", "password": "pass"}
+    :param auth: authentication parameters {"username": "user", "password": "pass"}
     :return: Rename result message
     """
     output = run_vboxmanage_command([
@@ -196,9 +223,12 @@ async def rename_file_in_vm(vm_id: str, old_name: str, new_name: str, auth: Opti
     ])
     
     if "error" in output:
-        return {"error": output}
+        return {"error": output["error"]}
     
-    return {"message": f"File {old_name} has been renamed to {new_name} in VM {vm_id}."}
+    if output.get("stderr"):
+        return {"error": output["stderr"], "stdout": output.get("stdout", "")}
+    
+    return {"message": f"File {old_name} has been renamed to {new_name} in VM {vm_id}.", "stdout": output.get("stdout", "")}
 
 
 

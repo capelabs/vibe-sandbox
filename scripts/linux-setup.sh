@@ -21,8 +21,6 @@ sudo mv tracee/dist/tracee-ebpf-static /usr/local/bin/tracee-ebpf
 sudo chmod +x /usr/local/bin/tracee-ebpf
 
 # 3. Create a systemd service for tracee
-read -p "Enter the webhook URL for tracee output (e.g., http://localhost:8080): " WEBHOOK_URL
-
 echo "Creating systemd service for tracee..."
 sudo tee /etc/systemd/system/tracee.service > /dev/null <<EOF
 [Unit]
@@ -30,7 +28,7 @@ Description=Tracee eBPF Service
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/tracee-ebpf --output json --output webhook:$WEBHOOK_URL
+ExecStart=/usr/local/bin/tracee-ebpf -o json
 Restart=always
 RestartSec=5
 
