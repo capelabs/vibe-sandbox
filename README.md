@@ -46,6 +46,9 @@ Follow the steps below to install and run VIBE Sandbox.
     - **Windows**: `setup-windows.bat`
     - **Linux**: `setup-linux.sh`
 
+    > **Note:**
+    > When prompted for the logstash address during setup, use `http://10.0.2.2:5044` (for Windows) or `http://10.0.2.2:5045` (for Linux). This allows the VM to communicate with the logstash service running on the host machine.
+
 #### Additional Configuration & Tips
 
 - **Running the Volatility3 MCP Server**
