@@ -1,0 +1,21 @@
+# Logstash 파이프라인 설정
+# 여러 파이프라인을 정의하여 서로 다른 데이터 소스와 처리 로직을 분리할 수 있습니다.
+
+- pipeline.id: main
+  path.config: "/usr/share/logstash/pipeline/logstash.conf"
+  pipeline.workers: 2
+  pipeline.batch.size: 1000
+  pipeline.batch.delay: 50
+
+# 추가 파이프라인 예시 (필요에 따라 활성화)
+# - pipeline.id: security
+#   path.config: "/usr/share/logstash/pipeline/security.conf"
+#   pipeline.workers: 1
+#   pipeline.batch.size: 500
+#   pipeline.batch.delay: 100
+
+# - pipeline.id: system
+#   path.config: "/usr/share/logstash/pipeline/system.conf"
+#   pipeline.workers: 1
+#   pipeline.batch.size: 200
+#   pipeline.batch.delay: 50
