@@ -77,7 +77,13 @@ Add the `mcp.json` file to Cursor's MCP settings. This file contains the VIBE Sa
     "virtualbox": {
       "url": "http://localhost:9000/sse"
     },
-    // ...existing code...
+    "opensearch": {
+      "url": "http://localhost:9200/_plugins/_ml/mcp/sse?append_to_base_url=true",
+      "headers": {
+        "Content-Type": "application/json",
+        "Accept-Encoding": "identity"
+      }
+    }
   }
 }
 ```
