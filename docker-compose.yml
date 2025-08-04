@@ -6,20 +6,22 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - $PWD/volatility3-mcp-server/dumps:/app/dumps
+      - ./volatility3-mcp-server/dumps:/app/dumps
   logstash:
     image: docker.elastic.co/logstash/logstash:9.0.0
     restart: always
     container_name: logstash
     environment:
-      - LS_JAVA_OPTS=-Xms512m -Xmx512m
       - MONITORING_ENABLED=false
     ports:
       - "5044:5044"
       - "5045:5045"
+    command: bash -c "bin/logstash-plugin install logstash-output-opensearch && logstash -f /usr/share/logstash/pipeline/logstash.conf"
     volumes:
-      - $PWD/configs/logstash/pipeline:/usr/share/logstash/pipeline
-      - $PWD/configs/logstash/config:/usr/share/logstash/config
+      - ./configs/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./configs/logstash/config:/usr/share/logstash/config
+    depends_on:
+      - opensearch
     networks:
       - opensearch_network
   opensearch:
@@ -31,7 +33,7 @@ services:
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
     volumes:
       - opensearch_data:/usr/share/opensearch/data
-      - $PWD/configs/opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml
+      - ./configs/opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml
     networks:
       - opensearch_network
     ports:
