@@ -33,9 +33,10 @@ Follow the steps below to install and run VIBE Sandbox.
     git clone git@github.com/capelabs/vibe-sandbox.git
     cd vibe-sandbox
     ```
-2. Install and sync uv:
+2. Install and sync uv (for virtualbox-mcp-server):
     ```bash
     pip install uv
+    cd virtualbox-mcp-server
     uv sync
     ```
 3. Start the server with Docker Compose:
@@ -51,12 +52,12 @@ Follow the steps below to install and run VIBE Sandbox.
 
 #### Additional Configuration & Tips
 
-- **Running the Volatility3 MCP Server**
-  - To run the Volatility3-based MCP server using uv, use the following command:
+- **Running the Virtualbox MCP Server**
+  - To run the Virtualbox-based MCP server using uv, use the following command:
     ```bash
     uv run --python main.py
     ```
-    (Working directory: `volatility3-mcp-server/`)
+    (Working directory: `virtualbox-mcp-server/`)
 
 - **Registering Environment Variables (Windows)**
   - Add the VirtualBox installation path (e.g., `C:\Program Files\Oracle\VirtualBox`) to your system `PATH` environment variable.
