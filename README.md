@@ -43,7 +43,7 @@ Follow the steps below to install and run VIBE Sandbox.
     ```bash
     docker compose up -d
     ```
-4. Start the virtual machine in VirtualBox and run the setup script for your OS:
+4. Start the virtual machine in VirtualBox and run the setup script for your OS with Administrator privileges:
     - **Windows**: `setup-windows.bat`
     - **Linux**: `setup-linux.sh`
 
