@@ -89,8 +89,9 @@ Write-Host "Proceeding with Winlogbeat setup..." -ForegroundColor Green
 # Prompt user for Logstash HTTP address
 $logstashAddress = Read-Host -Prompt "Enter Logstash HTTP address (e.g. http://logstash-server:8080)"
 if ([string]::IsNullOrWhiteSpace($logstashAddress)) {
-    Write-Host "No Logstash address provided. Using file output instead." -ForegroundColor Yellow
-    $useLogstash = $false
+    $logstashAddress = "http://10.0.2.2:5044"
+    Write-Host "No Logstash address provided. Using default: $logstashAddress" -ForegroundColor Yellow
+    $useLogstash = $true
 } else {
     # Validate the address format
     if (-not $logstashAddress.StartsWith("http://") -and -not $logstashAddress.StartsWith("https://")) {

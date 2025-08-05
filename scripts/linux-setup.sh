@@ -21,7 +21,13 @@ sudo mv tracee/dist/tracee-static /usr/local/bin/tracee
 sudo chmod +x /usr/local/bin/tracee
 
 # 3. Create a systemd service for tracee
+
+# Set default webhook URL if input is empty
 read -p "Enter the webhook URL for tracee output (e.g., http://localhost:8080): " WEBHOOK_URL
+if [ -z "$WEBHOOK_URL" ]; then
+    WEBHOOK_URL="http://10.0.2.2:5045"
+    echo "No URL entered. Using default: $WEBHOOK_URL"
+fi
 
 echo "Creating systemd service for tracee..."
 sudo tee /etc/systemd/system/tracee.service > /dev/null <<EOF
