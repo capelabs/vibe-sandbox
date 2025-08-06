@@ -34,12 +34,8 @@ TOOL_RESPONSE=$(curl -s -X POST "http://${OPENSEARCH_HOST}:${OPENSEARCH_PORT}/_p
     -H 'Content-Type: application/json' \
     -d '{
     "tools": [
-        {
-            "type": "ListIndexTool"
-        },
-        {
-            "type": "IndexMappingTool"
-        },
+        { "type": "ListIndexTool" },
+        { "type": "IndexMappingTool" },
         {
             "type": "SearchIndexTool",
             "attributes": {
@@ -59,9 +55,7 @@ TOOL_RESPONSE=$(curl -s -X POST "http://${OPENSEARCH_HOST}:${OPENSEARCH_PORT}/_p
                         }
                     }
                 },
-                "required": [
-                    "input"
-                ],
+                "required": ["input"],
                 "strict": false
             }
         }
