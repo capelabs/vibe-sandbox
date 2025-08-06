@@ -55,7 +55,7 @@ Follow the steps below to install and run VIBE Sandbox.
 - **Running the Virtualbox MCP Server**
   - To run the Virtualbox-based MCP server using uv, use the following command:
     ```bash
-    uv run --python main.py
+    uv run python main.py
     ```
     (Working directory: `virtualbox-mcp-server/`)
 
