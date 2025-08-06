@@ -64,21 +64,6 @@ if (-not $sysmonInstalled) {
         Write-Host "Warning: Failed to install Sysmon. $_" -ForegroundColor Yellow
         Write-Host "Continuing with Winlogbeat setup..." -ForegroundColor Yellow
     }
-
-    # Apply Sysmon configuration only if installation was successful
-    if ((Get-Service -Name Sysmon* -ErrorAction SilentlyContinue)) {
-        try {
-            Write-Host "Applying Sysmon configuration"
-            $process = Start-Process -FilePath $sysmonExe -ArgumentList "-c", $sysmonConfigPath -Wait -NoNewWindow -PassThru
-            if ($process.ExitCode -ne 0) {
-                Write-Host "Warning: Sysmon configuration failed with exit code: $($process.ExitCode)" -ForegroundColor Yellow
-            } else {
-                Write-Host "Sysmon configured successfully"
-            }
-        } catch {
-            Write-Host "Warning: Failed to configure Sysmon. $_" -ForegroundColor Yellow
-        }
-    }
 } else {
     Write-Host "Sysmon is already installed. Skipping Sysmon installation." -ForegroundColor Yellow
 }
@@ -103,35 +88,39 @@ if ([string]::IsNullOrWhiteSpace($logstashAddress)) {
 
 # Use the provided link to download the Winlogbeat zip file.
 
+
 $winlogbeatUrl = "https://artifacts.elastic.co/downloads/beats/winlogbeat/winlogbeat-9.0.3-windows-x86_64.zip"
 $winlogbeatOutputPath = "$env:TEMP\winlogbeat.zip"
 $winlogbeatExtractPath = "C:\Program Files\Winlogbeat"
 
-try {
-    Invoke-WebRequest -Uri $winlogbeatUrl -OutFile $winlogbeatOutputPath -ErrorAction Stop
-    Write-Host "Downloaded Winlogbeat to $winlogbeatOutputPath"
-} catch {
-    Exit-OnError "Failed to download Winlogbeat. $_"
-}
-
-# Extract the contents of the downloaded Winlogbeat zip file to a desired location.
-
-try {
-    if (Test-Path $winlogbeatExtractPath) {
-        Remove-Item -Path $winlogbeatExtractPath -Recurse -Force
+if (Test-Path $winlogbeatExtractPath) {
+    Write-Host "Winlogbeat already exists at $winlogbeatExtractPath. Skipping download and extraction." -ForegroundColor Yellow
+} else {
+    try {
+        Invoke-WebRequest -Uri $winlogbeatUrl -OutFile $winlogbeatOutputPath -ErrorAction Stop
+        Write-Host "Downloaded Winlogbeat to $winlogbeatOutputPath"
+    } catch {
+        Exit-OnError "Failed to download Winlogbeat. $_"
     }
-    New-Item -Path $winlogbeatExtractPath -ItemType Directory -Force | Out-Null
-    Expand-Archive -Path $winlogbeatOutputPath -DestinationPath $winlogbeatExtractPath -Force -ErrorAction Stop
-    Write-Host "Extracted Winlogbeat to $winlogbeatExtractPath"
 
-    # Fix directory structure (zip contains an inner directory)
-    $innerDir = Get-ChildItem -Path $winlogbeatExtractPath -Directory | Select-Object -First 1
-    if ($innerDir) {
-        Get-ChildItem -Path $innerDir.FullName | Copy-Item -Destination $winlogbeatExtractPath -Recurse -Force
-        Remove-Item -Path $innerDir.FullName -Recurse -Force
+    # Extract the contents of the downloaded Winlogbeat zip file to a desired location.
+    try {
+        if (Test-Path $winlogbeatExtractPath) {
+            Remove-Item -Path $winlogbeatExtractPath -Recurse -Force
+        }
+        New-Item -Path $winlogbeatExtractPath -ItemType Directory -Force | Out-Null
+        Expand-Archive -Path $winlogbeatOutputPath -DestinationPath $winlogbeatExtractPath -Force -ErrorAction Stop
+        Write-Host "Extracted Winlogbeat to $winlogbeatExtractPath"
+
+        # Fix directory structure (zip contains an inner directory)
+        $innerDir = Get-ChildItem -Path $winlogbeatExtractPath -Directory | Select-Object -First 1
+        if ($innerDir) {
+            Get-ChildItem -Path $innerDir.FullName | Copy-Item -Destination $winlogbeatExtractPath -Recurse -Force
+            Remove-Item -Path $innerDir.FullName -Recurse -Force
+        }
+    } catch {
+        Exit-OnError "Failed to extract Winlogbeat. $_"
     }
-} catch {
-    Exit-OnError "Failed to extract Winlogbeat. $_"
 }
 
 # Modify the Winlogbeat configuration file (winlogbeat.yml) to specify log sources and output settings.
