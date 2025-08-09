@@ -78,10 +78,6 @@ if ([string]::IsNullOrWhiteSpace($logstashAddress)) {
     Write-Host "No Logstash address provided. Using default: $logstashAddress" -ForegroundColor Yellow
     $useLogstash = $true
 } else {
-    # Validate the address format
-    if (-not $logstashAddress.StartsWith("http://") -and -not $logstashAddress.StartsWith("https://")) {
-        $logstashAddress = "http://" + $logstashAddress
-    }
     $useLogstash = $true
     Write-Host "Will configure Winlogbeat to send logs to: $logstashAddress" -ForegroundColor Green
 }

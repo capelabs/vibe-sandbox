@@ -13,6 +13,7 @@ services:
     container_name: logstash
     environment:
       - MONITORING_ENABLED=false
+      - LS_JAVA_OPTS=-Xmx2g -Xms2g
     ports:
       - "5044:5044"
       - "5045:5045"
@@ -30,7 +31,7 @@ services:
     container_name: opensearch
     environment:
       - DISABLE_SECURITY_PLUGIN=true
-      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - OPENSEARCH_JAVA_OPTS=-Xms2g -Xmx2g
     volumes:
       - opensearch_data:/usr/share/opensearch/data
       - ./configs/opensearch/opensearch.yml:/usr/share/opensearch/config/opensearch.yml
