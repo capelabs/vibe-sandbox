@@ -52,6 +52,26 @@ Follow the steps below to install and run VIBE Sandbox.
 
 #### Additional Configuration & Tips
 
+
+- **VOLATILITY_MCP_TRANSPORT Option**
+  - The `VOLATILITY_MCP_TRANSPORT` environment variable determines the transport protocol used by the Volatility MCP server for communication with clients.
+  - **Supported values:**
+    - `http` (default): Uses HTTP protocol for communication (recommended for most use cases).
+    - `sse`: Uses Server-Sent Events for real-time streaming to clients.
+    - `streamable-http`: Uses a streamable HTTP protocol for continuous data transfer (for advanced integrations).
+  - **How to set:**
+    - You can set this variable in your environment or in your Docker Compose file:
+      ```bash
+      export VOLATILITY_MCP_TRANSPORT=sse
+      ```
+      or in your docker-compose.yml:
+      ```yaml
+      environment:
+        - VOLATILITY_MCP_TRANSPORT=sse
+      ```
+  - **Note:**
+    - Choose the transport that best fits your client and integration requirements. For most real-time use cases, `sse` is recommended.
+
 - **Running the Virtualbox MCP Server**
   - To run the Virtualbox-based MCP server using uv, use the following command:
     ```bash

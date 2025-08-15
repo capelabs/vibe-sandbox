@@ -13,6 +13,7 @@ mcp = FastMCP(name="Volatility3 MCP Server")
 framework.import_files(volatility3.plugins, True)
 memory_dumps_path = os.getenv("VOLATILITY_MEMORY_DUMPS_PATH", "/app/dumps")
 remote_isf_url = os.getenv("VOLATILITY_REMOTE_ISF_URL", "https://github.com/Abyss-W4tcher/volatility3-symbols/raw/master/banners/banners.json")
+transport = os.getenv("VOLATILITY_MCP_TRANSPORT", "sse")
 
 
 def run_volatility_plugin(plugin_name, memory_dump, arguments, is_windows=False):
@@ -99,7 +100,7 @@ async def list_all_available_plugins():
 
 if __name__ == "__main__":
     mcp.run(
-        transport="sse",
+        transport=transport,
         host="0.0.0.0",
         port=8000,
     )
