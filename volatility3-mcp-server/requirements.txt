@@ -1,1 +1,2 @@
 fastmcp>=2.9.2
+uvicorn[standard]

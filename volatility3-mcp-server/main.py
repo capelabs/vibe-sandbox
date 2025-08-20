@@ -98,6 +98,8 @@ async def list_all_available_plugins():
     }
 
 
+app = mcp.http_app()
+
 if __name__ == "__main__":
     mcp.run(
         transport=transport,
